@@ -1,0 +1,10 @@
+{
+  "name": "infinite_runner",
+  "version": "1.0.0",
+  "main": "server.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "phaser": "^3.23.0"
+  }
+}
