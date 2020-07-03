@@ -35,7 +35,7 @@ class GameScene extends Phaser.Scene{
         this.anims.create({
             key:'run',
             frames:this.anims.generateFrameNumbers('player',{start:1,end:9}),
-            frameRate:20,
+            frameRate:9,
             repeat: -1
         });
 
@@ -46,8 +46,10 @@ class GameScene extends Phaser.Scene{
     
     update(){
             if(this.cursors.right.isDown){
-                this.player.anims.play('run');
+                this.player.setVelocityX(90);
+                this.player.anims.play("run",true,2);
             }else{
+                this.player.setVelocityX(0);
                 this.player.anims.play('static');
             }
            

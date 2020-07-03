@@ -6,6 +6,7 @@ class TitleScene extends Phaser.Scene{
 		var player;
 		var width;
 		var height;
+		var animation;
 	}
 
 	preload(){
@@ -28,22 +29,22 @@ class TitleScene extends Phaser.Scene{
 			this.scene.start('GameScene');
 		},this);
 
-		this.player = this.add.sprite(this.width/2,this.height/2 - 170,'runner');
+		this.player = this.add.sprite(this.width/2,this.height/2 - 100,'runner');
 		this.player.setScale(1.5,1.5);
 
-		// this.anims.create({
-        //     key:'run',
-        //     frames:this.anims.generateFrameNumbers('runner',{start:1,end:9}),
-        //     frameRate:9,
-        //     repeat: -1
-		// });
-		this.player.animations.add()
+		this.anims.create({
+            key:'run',
+            frames:this.anims.generateFrameNumbers('runner',{start:1,end:9}),
+            frameRate:9,
+            repeat: -1
+		});
+		
 
 	}
 
 	update(){
 		
-		this.player.anims.play("run");
+		this.player.anims.play("run",true,2);
 
 	}
 
