@@ -12,10 +12,10 @@ class TitleScene extends Phaser.Scene{
 		this.width = window.innerWidth
 		this.height = window.innerHeight;
 
-		this.load.spritesheet('runner','assets/dude.png',{ frameWidth: 32, frameHeight: 48 });
+		this.load.spritesheet('runner','assets/player/player.png',{ frameWidth: 96, frameHeight: 90 });
 		this.load.image('startButton','assets/startButton.png');
 
-		this.load.sceneFile('GameScene','GameScene.js');	
+		//this.load.sceneFile('GameScene','GameScene.js');	
 	}
 
 	create(){
@@ -27,21 +27,23 @@ class TitleScene extends Phaser.Scene{
 		startButton.on("pointerdown",function(event){
 			this.scene.start('GameScene');
 		},this);
-		
+
 		this.player = this.add.sprite(this.width/2,this.height/2 - 170,'runner');
-		this.player.setScale(3,3);
-		
-		this.anims.create({
-            key: 'run',
-            frames: this.anims.generateFrameNumbers('runner', { start: 5, end: 8 }),
-            frameRate: 10,
-            repeat: -1
-        });
+		this.player.setScale(1.5,1.5);
+
+		// this.anims.create({
+        //     key:'run',
+        //     frames:this.anims.generateFrameNumbers('runner',{start:1,end:9}),
+        //     frameRate:9,
+        //     repeat: -1
+		// });
+		this.player.animations.add()
+
 	}
 
 	update(){
 		
-		this.player.anims.play("run",true);
+		this.player.anims.play("run");
 
 	}
 
