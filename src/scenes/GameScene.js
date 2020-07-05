@@ -21,16 +21,12 @@ class GameScene extends Phaser.Scene{
     create(){
         //Setup the platform
         this.ground = this.add.tileSprite(0,window.innerHeight - 100,window.innerWidth,109,"ground").setOrigin(0).setScrollFactor(0);
-        this.physics.add.existing(this.ground);
+        this.physics.add.existing(this.ground,true);
         
-        this.ground.body.immovable = true;
-        this.ground.body.collideWorldBounds = true;
-        this.ground.body.allowGravity = false;
-
         //Setup the Player
-        this.player = this.physics.add.sprite(0, window.innerHeight/2, 'player');
+        this.player = this.physics.add.sprite(window.innerWidth/3, window.innerHeight/2, 'player');
         this.player.setCollideWorldBounds(true);
-        this.player.body.checkCollision.right = false
+        this.physics.add.existing(this.player,false);
 
         //Setup the Camera
         this.cameras.main.startFollow(this.player);
@@ -41,8 +37,9 @@ class GameScene extends Phaser.Scene{
 
         this.anims.create({
             key:'static',
-            frames:[{key:'player',frame:0}],
-            frameRate:9
+            // frames:[{key:'player',frame:0}],
+            frames:this.anims.generateFrameNumbers('player',{start:0,end:0}),
+            frameRate:8
         });
 
         this.anims.create({
@@ -58,17 +55,26 @@ class GameScene extends Phaser.Scene{
     }
     
     update(){
-       if(this.cursors.right.isDown){
+        const touchingDown = this.player.body.touching.down;
+       
+        if(this.cursors.right.isDown){
             this.player.setVelocityX(6);
             this.ground.tilePositionX += 6;
             this.player.anims.play("run",true);
-        }
-        else{
+        }else if(touchingDown){
             this.player.setVelocityX(0);
-            this.player.anims.play('static');
+            this.player.anims.stop();
+            if(this.player.anims.currentAnim != null){
+                this.player.anims.setCurrentFrame(this.player.anims.currentAnim.frames[0]);
+            }
+            
         }
 
-           
+        if(this.cursors.up.isDown && touchingDown){
+            this.player.setVelocityY(-270);
+            this.ground.tilePositionX += 6;
+            this.player.anims.play("run",true);
+        }
     }
 }
 

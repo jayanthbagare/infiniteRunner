@@ -6,12 +6,12 @@ const config = {
 	backgroundColor:'0xffffff',
 	width:window.innerWidth,
 	height:window.innerHeight,
-	pixelArt: true,
+	pixelArt: false,
 	physics:{
 		default:'arcade',
 		arcade:{
 			debug:true,
-			gravity:{y:300}
+			gravity:{y:200}
 		}
 	},
 	dom:{
