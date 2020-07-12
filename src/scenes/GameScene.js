@@ -81,29 +81,36 @@ class GameScene extends Phaser.Scene{
             repeat:-1
         });
 
-        this.enemyCollider = this.physics.add.collider(this.player,this.enemy,function(_player,_enemy){
+        this.enemyCollider = this.physics.add.collider(this.player,this.enemy,function(){
             this.playerDied = true;
-            // _player.anims.play("playerDies");
-            // this.physics.world.removeCollider(this.enemyCollider);
-
         },null,this);
 
         this.cursors = this.input.keyboard.createCursorKeys();
     }
     
     update(){
-        const touchingDown = this.player.body.touching.down;
+        if(this.playerDied){
+            this.input.keyboard.resetKeys();
+            this.endGame();
+        }
+
+        var touchingDown = this.player.body.touching.down;
+
+        console.log(touchingDown);
         
         if(this.enemyExit == false){
             if(this.enemy.body.position.x <= 10){
                 this.enemy.disableBody(true,true);
                 this.enemy.destroy();
                 this.enemyExit = true;
+                this.enemy = null;
             }else{
-                this.enemy.setVelocityX(-188);
+                this.enemy.setVelocityX(-180);
                 this.enemy.anims.play("enemyRun",true);
                 this.enemyExit = false;
             }
+        }else{
+            this.spawnEnemy();
         }
         //Here is the animation that I wanted for the horizontal movement
         /*
@@ -126,23 +133,35 @@ class GameScene extends Phaser.Scene{
             }
             
         }
-
-
-        //Here is the jump animation
-        //Still the mechanics are not very clean that i'm happy about.
-        if(this.cursors.up.isDown && touchingDown){
-            this.player.body.velocity.y += -250;
-            this.scene.tilePositionX += 2;
-            this.ground.tilePositionX += 6;
-            this.player.anims.play("run",true);
+        
+        if(Phaser.Input.Keyboard.JustDown(this.cursors.up) && touchingDown){
+            this.player.body.velocity.y += -450;
         }
 
-        if(this.playerDied){
-            // this.physics.world.removeCollider(this.enemyCollider);
-            this.enemyCollider.active = false;
-            this.player.anims.play("playerDies");
-            this.scene.restart();
-        }
+        this.spawnCoins();
+    }
+
+    endGame(){
+        this.player.anims.stop();
+        this.player.anims.play("playerDies");
+        this.player.active = false;
+        this.enemyCollider.active = false;
+    }
+
+    spawnEnemy(){
+        this.enemy = this.physics.add.sprite(Phaser.Math.Between(window.innerWidth/2 + 100,window.innerWidth), window.innerHeight - 190,'enemy');
+        this.physics.add.existing(this.enemy,false);
+        this.enemy.setCollideWorldBounds(true);
+        this.physics.add.collider(this.enemy,this.ground);
+        this.enemyCollider = this.physics.add.collider(this.player,this.enemy,function(){
+            this.playerDied = true;
+        },null,this);
+        this.enemy.flipX = true;
+        this.enemyExit = false;
+    }
+
+    spawnCoins(){
+        console.log('Spawning Coins');
     }
 }
 
