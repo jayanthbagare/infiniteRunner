@@ -13,6 +13,7 @@ class GameScene extends Phaser.Scene{
         var enemyExit;
         var enemyCollider;
         var playerDied;
+        var distanceTravelled;
 
         super({
             key:'GameScene'
@@ -42,12 +43,15 @@ class GameScene extends Phaser.Scene{
         this.player = this.physics.add.sprite(window.innerWidth/3, window.innerHeight/2, 'player');
         this.player.setCollideWorldBounds(true);
         this.physics.add.existing(this.player,false);
+        this.distanceTravelled = 0;
+        this.player.body.setSize(this.player.body.width - 40,this.player.body.height,true);
 
         //Setup the Enemy
         this.enemy = this.physics.add.sprite(window.innerWidth - 100, window.innerHeight - 190,'enemy');
         this.enemy.setCollideWorldBounds(true);
         this.physics.add.existing(this.enemy,false);
         this.enemy.flipX = true;
+        this.enemy.body.setSize(this.enemy.body.width - 40,this.enemy.body.height,true);
 
         //Setup the Camera
         this.cameras.main.startFollow(this.player);
@@ -89,23 +93,44 @@ class GameScene extends Phaser.Scene{
     }
     
     update(){
+        var groundSpeed = 6;
+        var bgSpeed = 2;
+        var playerSpeed = 6;
+        var enemySpeed = -180;
+
         if(this.playerDied){
             this.input.keyboard.resetKeys();
             this.endGame();
         }
 
-        var touchingDown = this.player.body.touching.down;
+        if(this.distanceTravelled > 30 && this.distanceTravelled <= 50){
+            groundSpeed *= 2;
+            bgSpeed *= 2;
+            playerSpeed *= 2;
+            enemySpeed += enemySpeed;
+        }else if(this.distanceTravelled >= 50 && this.distanceTravelled <= 70){
+            groundSpeed *= 4;
+            bgSpeed *= 4;
+            playerSpeed *= 4;
+            enemySpeed += 2 * enemySpeed;
+        }else if(this.distanceTravelled > 70){
+            groundSpeed *= 6;
+            bgSpeed *= 6;
+            playerSpeed *= 6;
+            enemySpeed += 3 * enemySpeed;
+        }
 
-        console.log(touchingDown);
-        
+        var touchingDown = this.player.body.touching.down;
+       
         if(this.enemyExit == false){
             if(this.enemy.body.position.x <= 10){
                 this.enemy.disableBody(true,true);
                 this.enemy.destroy();
                 this.enemyExit = true;
                 this.enemy = null;
+                this.distanceTravelled += 10;
             }else{
-                this.enemy.setVelocityX(-180);
+                this.enemy.setVelocityX(enemySpeed);
                 this.enemy.anims.play("enemyRun",true);
                 this.enemyExit = false;
             }
@@ -121,10 +146,10 @@ class GameScene extends Phaser.Scene{
             I can achieve that would love to take feedback/code.
         */
         if(this.cursors.right.isDown){
-            this.player.setVelocityX(6);
+            this.player.setVelocityX(playerSpeed);
             this.player.anims.play("run",true);
-            this.scene.tilePositionX += 2;
-            this.ground.tilePositionX += 6;
+            this.scene.tilePositionX += bgSpeed;
+            this.ground.tilePositionX += groundSpeed;
         }else if(touchingDown){
             this.player.setVelocityX(0);
             this.player.anims.stop();
@@ -157,11 +182,12 @@ class GameScene extends Phaser.Scene{
             this.playerDied = true;
         },null,this);
         this.enemy.flipX = true;
+        this.enemy.body.setSize(this.enemy.body.width - 40,this.enemy.body.height,true);
         this.enemyExit = false;
     }
 
     spawnCoins(){
-        console.log('Spawning Coins');
+        //console.log('Spawning Coins');
     }
 }
 
