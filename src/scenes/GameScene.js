@@ -14,6 +14,8 @@ class GameScene extends Phaser.Scene{
         var enemyCollider;
         var playerDied;
         var distanceTravelled;
+        var txtDistanceTravelled;
+        var txtCoinsCollected;
 
         super({
             key:'GameScene'
@@ -40,7 +42,7 @@ class GameScene extends Phaser.Scene{
         this.physics.add.existing(this.ground,true);
         
         //Setup the Player
-        this.player = this.physics.add.sprite(window.innerWidth/3, window.innerHeight/2, 'player');
+        this.player = this.physics.add.sprite(window.innerWidth/5, window.innerHeight/2, 'player');
         this.player.setCollideWorldBounds(true);
         this.physics.add.existing(this.player,false);
         this.distanceTravelled = 0;
@@ -53,16 +55,21 @@ class GameScene extends Phaser.Scene{
         this.enemy.flipX = true;
         this.enemy.body.setSize(this.enemy.body.width - 40,this.enemy.body.height,true);
 
+        //Add the Score and Distance Travelled text
+        this.txtDistanceTravelled = this.add.text(10,10,"Distance Travelled : 0",{fontSize:'18px',fill:'#000'});
+
         //Setup the Camera
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,Number.MAX_SAFE_INTEGER,window.innerHeight - 100);
 
-        // this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-
+        // Add the Physics.
         this.physics.add.collider(this.player,this.ground);
         this.physics.add.collider(this.enemy,this.ground);
+        this.enemyCollider = this.physics.add.collider(this.player,this.enemy,function(){
+            this.playerDied = true;
+        },null,this);
         
-
+        //Add the animations
         //Animation to run to the right. Do not add left run animation, this is not the intent of the game
         this.anims.create({
             key:'run',
@@ -85,10 +92,7 @@ class GameScene extends Phaser.Scene{
             repeat:-1
         });
 
-        this.enemyCollider = this.physics.add.collider(this.player,this.enemy,function(){
-            this.playerDied = true;
-        },null,this);
-
+        //Add the Key Controls 
         this.cursors = this.input.keyboard.createCursorKeys();
     }
     
@@ -97,23 +101,24 @@ class GameScene extends Phaser.Scene{
         var bgSpeed = 2;
         var playerSpeed = 6;
         var enemySpeed = -180;
+        var no_of_enemies = 0;
 
         if(this.playerDied){
             this.input.keyboard.resetKeys();
             this.endGame();
         }
 
-        if(this.distanceTravelled > 30 && this.distanceTravelled <= 50){
+        if(this.distanceTravelled >= 30 && this.distanceTravelled < 70){
             groundSpeed *= 2;
             bgSpeed *= 2;
             playerSpeed *= 2;
             enemySpeed += enemySpeed;
-        }else if(this.distanceTravelled >= 50 && this.distanceTravelled <= 70){
+        }else if(this.distanceTravelled >= 70 && this.distanceTravelled <= 400){
             groundSpeed *= 4;
             bgSpeed *= 4;
             playerSpeed *= 4;
             enemySpeed += 2 * enemySpeed;
-        }else if(this.distanceTravelled > 70){
+        }else if(this.distanceTravelled > 400){
             groundSpeed *= 6;
             bgSpeed *= 6;
             playerSpeed *= 6;
@@ -127,8 +132,8 @@ class GameScene extends Phaser.Scene{
                 this.enemy.disableBody(true,true);
                 this.enemy.destroy();
                 this.enemyExit = true;
-                this.enemy = null;
                 this.distanceTravelled += 10;
+                this.txtDistanceTravelled.setText("Distance Travelled : " + this.distanceTravelled);
             }else{
                 this.enemy.setVelocityX(enemySpeed);
                 this.enemy.anims.play("enemyRun",true);
@@ -174,7 +179,7 @@ class GameScene extends Phaser.Scene{
     }
 
     spawnEnemy(){
-        this.enemy = this.physics.add.sprite(Phaser.Math.Between(window.innerWidth/2 + 100,window.innerWidth), window.innerHeight - 190,'enemy');
+        this.enemy = this.physics.add.sprite(Phaser.Math.Between(window.innerWidth/2,window.innerWidth), window.innerHeight - 190,'enemy');
         this.physics.add.existing(this.enemy,false);
         this.enemy.setCollideWorldBounds(true);
         this.physics.add.collider(this.enemy,this.ground);

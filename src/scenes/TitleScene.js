@@ -3,7 +3,7 @@ class TitleScene extends Phaser.Scene{
 		super({
 			key:'TitleScene'
 		});
-		var player;
+		var character;
 		var width;
 		var height;
 		var animation;
@@ -15,8 +15,6 @@ class TitleScene extends Phaser.Scene{
 
 		this.load.spritesheet('runner','assets/player/player.png',{ frameWidth: 96, frameHeight: 90 });
 		this.load.image('startButton','assets/startButton.png');
-
-		//this.load.sceneFile('GameScene','GameScene.js');	
 	}
 
 	create(){
@@ -29,8 +27,8 @@ class TitleScene extends Phaser.Scene{
 			this.scene.start('GameScene');
 		},this);
 
-		this.player = this.add.sprite(this.width/2,this.height/2 - 100,'runner');
-		this.player.setScale(1.5,1.5);
+		this.character = this.add.sprite(this.width/2,this.height/2 - 100,'runner');
+		this.character.setScale(1.5,1.5);
 
 		this.anims.create({
             key:'run',
@@ -39,18 +37,12 @@ class TitleScene extends Phaser.Scene{
             repeat: -1
 		});
 		
+		this.cursors = this.input.keyboard.createCursorKeys();
 
 	}
 
 	update(){
-		
-		this.player.anims.play("run",true,2);
-
-	}
-
-	gotoGame(){
-		console.log('Going to Game');
-		
+		this.character.anims.play("run",true,2);
 	}
 }
 
