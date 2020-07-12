@@ -3,12 +3,16 @@ class GameScene extends Phaser.Scene{
     constructor(){
         var ground;
         var player;
+        var enemy;
         var cursors;
         var map;
         var backgroundLayer;
         var groundLayer;
         var keySpace;
         var scene;
+        var enemyExit;
+        var enemyCollider;
+        var playerDied;
 
         super({
             key:'GameScene'
@@ -16,16 +20,20 @@ class GameScene extends Phaser.Scene{
     }
 
     preload(){
-        this.load.image('scene','assets/backgrounds/scene.png');
-        this.load.image('ground','assets/backgrounds/map1.png');
-        this.load.spritesheet('player','assets/player/player.png',{frameWidth:96,frameHeight:80});
-        this.load.spritesheet('attack','assets/player/attack.png',{frameWidth:96,frameHeight:71});
+        this.load.image('scene','./assets/backgrounds/bgScene.png');
+        this.load.image('ground','./assets/backgrounds/ground.png');
+        this.load.spritesheet('player','./assets/player/player.png',{frameWidth:96,frameHeight:80});
+        this.load.spritesheet('enemy','./assets/player/enemySheet.png',{frameWidth:96,frameHeight:80});
+        this.load.spritesheet('playerDies','./assets/player/playerDie.png',{frameWidth:96,frameHeight:75});
+
+        this.enemyExit = false;
     }
 
     create(){
         //Setup the background
-        this.scene = this.add.tileSprite(0,170,window.innerWidth,window.innerHeight - 100,"scene").setOrigin(0).setScrollFactor(0);
-
+        this.scene = this.add.tileSprite(0,0,window.innerWidth,window.innerHeight - 190,"scene").setOrigin(0).setScrollFactor(1).setScale(1.55);
+        
+        
         //Setup the platform
         this.ground = this.add.tileSprite(0,window.innerHeight - 100,window.innerWidth,100,"ground").setOrigin(0).setScrollFactor(0);
         this.physics.add.existing(this.ground,true);
@@ -35,6 +43,12 @@ class GameScene extends Phaser.Scene{
         this.player.setCollideWorldBounds(true);
         this.physics.add.existing(this.player,false);
 
+        //Setup the Enemy
+        this.enemy = this.physics.add.sprite(window.innerWidth - 100, window.innerHeight - 190,'enemy');
+        this.enemy.setCollideWorldBounds(true);
+        this.physics.add.existing(this.enemy,false);
+        this.enemy.flipX = true;
+
         //Setup the Camera
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,Number.MAX_SAFE_INTEGER,window.innerHeight - 100);
@@ -42,7 +56,8 @@ class GameScene extends Phaser.Scene{
         // this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         this.physics.add.collider(this.player,this.ground);
-
+        this.physics.add.collider(this.enemy,this.ground);
+        
 
         //Animation to run to the right. Do not add left run animation, this is not the intent of the game
         this.anims.create({
@@ -53,20 +68,43 @@ class GameScene extends Phaser.Scene{
         });
 
         this.anims.create({
-            key:'attack',
-            frames:this.anims.generateFrameNumbers('attack',{start:0,end:6}),
-            frameRate:8,
+            key:'enemyRun',
+            frames:this.anims.generateFrameNumbers('enemy',{start:1,end:9}),
+            frameRate:20,
             repeat: -1
         });
 
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.anims.create({
+            key:'playerDies',
+            frames:this.anims.generateFrameNumbers('playerDies',{start:0,end:7}),
+            frameRate:20,
+            repeat:-1
+        });
 
-                
+        this.enemyCollider = this.physics.add.collider(this.player,this.enemy,function(_player,_enemy){
+            this.playerDied = true;
+            // _player.anims.play("playerDies");
+            // this.physics.world.removeCollider(this.enemyCollider);
+
+        },null,this);
+
+        this.cursors = this.input.keyboard.createCursorKeys();
     }
     
     update(){
         const touchingDown = this.player.body.touching.down;
-       
+        
+        if(this.enemyExit == false){
+            if(this.enemy.body.position.x <= 10){
+                this.enemy.disableBody(true,true);
+                this.enemy.destroy();
+                this.enemyExit = true;
+            }else{
+                this.enemy.setVelocityX(-188);
+                this.enemy.anims.play("enemyRun",true);
+                this.enemyExit = false;
+            }
+        }
         //Here is the animation that I wanted for the horizontal movement
         /*
             the way I look at the movement is the character is moving and the
@@ -77,9 +115,9 @@ class GameScene extends Phaser.Scene{
         */
         if(this.cursors.right.isDown){
             this.player.setVelocityX(6);
+            this.player.anims.play("run",true);
             this.scene.tilePositionX += 2;
             this.ground.tilePositionX += 6;
-            this.player.anims.play("run",true);
         }else if(touchingDown){
             this.player.setVelocityX(0);
             this.player.anims.stop();
@@ -89,24 +127,22 @@ class GameScene extends Phaser.Scene{
             
         }
 
+
         //Here is the jump animation
         //Still the mechanics are not very clean that i'm happy about.
         if(this.cursors.up.isDown && touchingDown){
             this.player.body.velocity.y += -250;
+            this.scene.tilePositionX += 2;
             this.ground.tilePositionX += 6;
             this.player.anims.play("run",true);
         }
 
-        //Add spacebar here to handle the attach animation.
-        // if(this.keySpace.isDown){
-        //     this.player.anims.play("attack",true);
-        // }else if(touchingDown){
-        //     this.player.setVelocityX(0);
-        //     this.player.anims.stop();
-        //     if(this.player.anims.currentAnim != null){
-        //         this.player.anims.setCurrentFrame(this.player.anims.currentAnim.frames[0]);
-        //     }
-        // }
+        if(this.playerDied){
+            // this.physics.world.removeCollider(this.enemyCollider);
+            this.enemyCollider.active = false;
+            this.player.anims.play("playerDies");
+            this.scene.restart();
+        }
     }
 }
 
