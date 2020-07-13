@@ -4,6 +4,7 @@ class GameScene extends Phaser.Scene{
         var ground;
         var player;
         var enemy;
+        var coins;
         var cursors;
         var map;
         var backgroundLayer;
@@ -28,8 +29,7 @@ class GameScene extends Phaser.Scene{
         this.load.spritesheet('player','./assets/player/player.png',{frameWidth:96,frameHeight:80});
         this.load.spritesheet('enemy','./assets/player/enemySheet.png',{frameWidth:96,frameHeight:80});
         this.load.spritesheet('playerDies','./assets/player/playerDie.png',{frameWidth:96,frameHeight:75});
-
-        this.enemyExit = false;
+        this.load.spritesheet('coins','assets/rewards/coins.png',{frameWidth:32,frameHeight:32});
     }
 
     create(){
@@ -54,6 +54,8 @@ class GameScene extends Phaser.Scene{
         this.physics.add.existing(this.enemy,false);
         this.enemy.flipX = true;
         this.enemy.body.setSize(this.enemy.body.width - 40,this.enemy.body.height,true);
+        this.enemyExit = false;
+
 
         //Add the Score and Distance Travelled text
         this.txtDistanceTravelled = this.add.text(10,10,"Distance Travelled : 0",{fontSize:'18px',fill:'#000'});
@@ -92,8 +94,18 @@ class GameScene extends Phaser.Scene{
             repeat:-1
         });
 
+        this.anims.create({
+            key:'coinTurn',
+            frames:this.anims.generateFrameNumbers('coins',{start:0,end:7}),
+            frameRate:8,
+            repeat:-1
+        });
+
         //Add the Key Controls 
         this.cursors = this.input.keyboard.createCursorKeys();
+
+        //Spawn the coins for the very first time
+        this.spawnCoins();
     }
     
     update(){
@@ -107,22 +119,22 @@ class GameScene extends Phaser.Scene{
             this.input.keyboard.resetKeys();
             this.endGame();
         }
-
+    
         if(this.distanceTravelled >= 30 && this.distanceTravelled < 70){
-            groundSpeed *= 2;
-            bgSpeed *= 2;
-            playerSpeed *= 2;
+            groundSpeed *= 1.5;
+            bgSpeed *= 1.5;
+            playerSpeed *= 1.5;
             enemySpeed += enemySpeed;
         }else if(this.distanceTravelled >= 70 && this.distanceTravelled <= 400){
+            groundSpeed *= 2.5;
+            bgSpeed *= 2.5;
+            playerSpeed *= 2.5;
+            enemySpeed += 2.5 * enemySpeed;
+        }else if(this.distanceTravelled > 400){
             groundSpeed *= 4;
             bgSpeed *= 4;
             playerSpeed *= 4;
-            enemySpeed += 2 * enemySpeed;
-        }else if(this.distanceTravelled > 400){
-            groundSpeed *= 6;
-            bgSpeed *= 6;
-            playerSpeed *= 6;
-            enemySpeed += 3 * enemySpeed;
+            enemySpeed += 2.5 * enemySpeed;
         }
 
         var touchingDown = this.player.body.touching.down;
@@ -155,6 +167,14 @@ class GameScene extends Phaser.Scene{
             this.player.anims.play("run",true);
             this.scene.tilePositionX += bgSpeed;
             this.ground.tilePositionX += groundSpeed;
+            
+            this.coins.children.iterate(function(child){
+                child.body.position.x -= bgSpeed;
+                if(child.body.position.x < 0){
+                    console.log(child.body.position.x);
+                    //this.coins.remove(child,true,true);
+                }
+            },this);
         }else if(touchingDown){
             this.player.setVelocityX(0);
             this.player.anims.stop();
@@ -167,8 +187,6 @@ class GameScene extends Phaser.Scene{
         if(Phaser.Input.Keyboard.JustDown(this.cursors.up) && touchingDown){
             this.player.body.velocity.y += -450;
         }
-
-        this.spawnCoins();
     }
 
     endGame(){
@@ -192,7 +210,17 @@ class GameScene extends Phaser.Scene{
     }
 
     spawnCoins(){
-        //console.log('Spawning Coins');
+        this.coins = this.physics.add.group({
+            key:'coin',
+            repeat:5,
+            setXY:{x:window.innerWidth/2,y:window.innerHeight - 300,stepX:70}
+        });
+        this.coins.scaleXY(0.25);
+        this.coins.children.iterate(function (child){
+            child.body.setAllowGravity(false);
+            child.setBounceY(0);
+        })
+        this.coins.playAnimation("coinTurn","0");
     }
 }
 
