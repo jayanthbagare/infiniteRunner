@@ -6,7 +6,7 @@ Pending things
 * Game Mechanics
 
 More to come for now
-
+Need to fill the above
 
 1. ## Clone this Repository##
 2. ## Run `yarn run start `
