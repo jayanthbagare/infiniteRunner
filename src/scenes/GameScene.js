@@ -17,6 +17,7 @@ class GameScene extends Phaser.Scene{
         var distanceTravelled;
         var txtDistanceTravelled;
         var txtCoinsCollected;
+        var scoreCoinsCollected;
 
         super({
             key:'GameScene'
@@ -59,10 +60,12 @@ class GameScene extends Phaser.Scene{
 
         //Add the Score and Distance Travelled text
         this.txtDistanceTravelled = this.add.text(10,10,"Distance Travelled : 0",{fontSize:'18px',fill:'#000'});
+        this.txtCoinsCollected = this.add.text(10,30,"Coins Collected : 0",{fontSize:'18px',fill:'#000'});
+        this.scoreCoinsCollected = 0;
 
         //Setup the Camera
         this.cameras.main.startFollow(this.player);
-        this.cameras.main.setBounds(0,0,Number.MAX_SAFE_INTEGER,window.innerHeight - 100);
+        this.cameras.main.setBounds(0,0,Number.MAX_SAFE_INTEGER,window.innerHeight - 100,true);
 
         // Add the Physics.
         this.physics.add.collider(this.player,this.ground);
@@ -119,34 +122,44 @@ class GameScene extends Phaser.Scene{
             this.input.keyboard.resetKeys();
             this.endGame();
         }
-    
+
+        this.coins.children.iterate(function(child){
+            if(child.body.position.x < 0){
+                child.disableBody(true,true);
+            }
+
+            if(this.distanceTravelled % 6 == 0 && this.distanceTravelled != 0){
+                this.spawnCoins();
+            }
+        },this);
+
         if(this.distanceTravelled >= 30 && this.distanceTravelled < 70){
             groundSpeed *= 1.5;
             bgSpeed *= 1.5;
             playerSpeed *= 1.5;
             enemySpeed += enemySpeed;
         }else if(this.distanceTravelled >= 70 && this.distanceTravelled <= 400){
-            groundSpeed *= 2.5;
-            bgSpeed *= 2.5;
-            playerSpeed *= 2.5;
-            enemySpeed += 2.5 * enemySpeed;
+            groundSpeed *= 1.8;
+            bgSpeed *= 1.8;
+            playerSpeed *= 1.8;
+            enemySpeed += 1.8 * enemySpeed;
         }else if(this.distanceTravelled > 400){
-            groundSpeed *= 4;
-            bgSpeed *= 4;
-            playerSpeed *= 4;
-            enemySpeed += 2.5 * enemySpeed;
+            groundSpeed *= 2;
+            bgSpeed *= 2;
+            playerSpeed *= 2;
+            enemySpeed += 2 * enemySpeed;
         }
 
         var touchingDown = this.player.body.touching.down;
        
         if(this.enemyExit == false){
-            if(this.enemy.body.position.x <= 10){
+            if(this.enemy.body.position.x <= 10 && this.playerDied != true){
                 this.enemy.disableBody(true,true);
                 this.enemy.destroy();
                 this.enemyExit = true;
                 this.distanceTravelled += 10;
                 this.txtDistanceTravelled.setText("Distance Travelled : " + this.distanceTravelled);
-            }else{
+            }else if(this.playerDied != true){
                 this.enemy.setVelocityX(enemySpeed);
                 this.enemy.anims.play("enemyRun",true);
                 this.enemyExit = false;
@@ -170,10 +183,7 @@ class GameScene extends Phaser.Scene{
             
             this.coins.children.iterate(function(child){
                 child.body.position.x -= bgSpeed;
-                if(child.body.position.x < 0){
-                    console.log(child.body.position.x);
-                    //this.coins.remove(child,true,true);
-                }
+                child.body.isCircle = true;
             },this);
         }else if(touchingDown){
             this.player.setVelocityX(0);
@@ -210,10 +220,14 @@ class GameScene extends Phaser.Scene{
     }
 
     spawnCoins(){
+        var randomHeight = Phaser.Math.Between(200,400);
+        var randomStepX = Phaser.Math.Between(100,200);
+        var randomStepY = Phaser.Math.Between(40,100);
+
         this.coins = this.physics.add.group({
             key:'coin',
-            repeat:5,
-            setXY:{x:window.innerWidth/2,y:window.innerHeight - 300,stepX:70}
+            repeat:1,
+            setXY:{x:window.innerWidth - randomHeight,y:window.innerHeight - randomHeight,stepX:randomStepX,stepY:randomStepY}
         });
         this.coins.scaleXY(0.25);
         this.coins.children.iterate(function (child){
@@ -221,6 +235,15 @@ class GameScene extends Phaser.Scene{
             child.setBounceY(0);
         })
         this.coins.playAnimation("coinTurn","0");
+        this.physics.add.overlap(this.player,this.coins,this.collectCoins,null,this);
+    }
+
+    collectCoins(player,coin){
+        if(this.playerDied != false){
+        coin.disableBody(true,true);
+            this.scoreCoinsCollected += 1;
+            this.txtCoinsCollected.setText("Coins Collected : " + this.scoreCoinsCollected);
+        }
     }
 }
 
