@@ -1,6 +1,7 @@
 import TitleScene from '/src/scenes/TitleScene.js';
 import GameScene from '/src/scenes/GameScene.js';
 
+
 const config = {
 	type:Phaser.AUTO,
 	backgroundColor:'0xffffff',

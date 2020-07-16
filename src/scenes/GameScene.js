@@ -47,6 +47,7 @@ class GameScene extends Phaser.Scene{
         this.player.setCollideWorldBounds(true);
         this.physics.add.existing(this.player,false);
         this.distanceTravelled = 0;
+        this.playerDied = false;
         this.player.body.setSize(this.player.body.width - 40,this.player.body.height,true);
 
         //Setup the Enemy
@@ -127,27 +128,29 @@ class GameScene extends Phaser.Scene{
             if(child.body.position.x < 0){
                 child.disableBody(true,true);
             }
-
-            if(this.distanceTravelled % 6 == 0 && this.distanceTravelled != 0){
-                this.spawnCoins();
-            }
         },this);
+
+
+        
+        if(this.coins.countActive() == 0){
+            this.spawnCoins();
+        }
 
         if(this.distanceTravelled >= 30 && this.distanceTravelled < 70){
             groundSpeed *= 1.5;
             bgSpeed *= 1.5;
             playerSpeed *= 1.5;
-            enemySpeed += enemySpeed;
+            enemySpeed *= 1.5;
         }else if(this.distanceTravelled >= 70 && this.distanceTravelled <= 400){
             groundSpeed *= 1.8;
             bgSpeed *= 1.8;
             playerSpeed *= 1.8;
-            enemySpeed += 1.8 * enemySpeed;
+            enemySpeed *= 1.8;
         }else if(this.distanceTravelled > 400){
             groundSpeed *= 2;
             bgSpeed *= 2;
             playerSpeed *= 2;
-            enemySpeed += 2 * enemySpeed;
+            enemySpeed *= 2;
         }
 
         var touchingDown = this.player.body.touching.down;
@@ -183,7 +186,6 @@ class GameScene extends Phaser.Scene{
             
             this.coins.children.iterate(function(child){
                 child.body.position.x -= bgSpeed;
-                child.body.isCircle = true;
             },this);
         }else if(touchingDown){
             this.player.setVelocityX(0);
@@ -221,26 +223,26 @@ class GameScene extends Phaser.Scene{
 
     spawnCoins(){
         var randomHeight = Phaser.Math.Between(200,400);
-        var randomStepX = Phaser.Math.Between(100,200);
-        var randomStepY = Phaser.Math.Between(40,100);
+        var randomStepX = Phaser.Math.Between(100,250);
+        var randomStepY = Phaser.Math.Between(-20,40);
 
         this.coins = this.physics.add.group({
             key:'coin',
-            repeat:1,
+            repeat:2,
             setXY:{x:window.innerWidth - randomHeight,y:window.innerHeight - randomHeight,stepX:randomStepX,stepY:randomStepY}
         });
         this.coins.scaleXY(0.25);
         this.coins.children.iterate(function (child){
+            child.body.isCircle = true;
             child.body.setAllowGravity(false);
-            child.setBounceY(0);
-        })
+        });
         this.coins.playAnimation("coinTurn","0");
         this.physics.add.overlap(this.player,this.coins,this.collectCoins,null,this);
     }
 
     collectCoins(player,coin){
-        if(this.playerDied != false){
-        coin.disableBody(true,true);
+        if(this.playerDied == false){
+            coin.disableBody(true,true);
             this.scoreCoinsCollected += 1;
             this.txtCoinsCollected.setText("Coins Collected : " + this.scoreCoinsCollected);
         }
