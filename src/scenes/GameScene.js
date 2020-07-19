@@ -35,11 +35,11 @@ class GameScene extends Phaser.Scene{
 
     create(){
         //Setup the background
-        this.scene = this.add.tileSprite(0,0,window.innerWidth,window.innerHeight - 190,"scene").setOrigin(0).setScrollFactor(1).setScale(1.55);
+        this.scene = this.add.tileSprite(0,0,window.innerWidth,window.innerHeight - 190,"scene").setOrigin(0).setScrollFactor(0.25).setScale(1.55);
         
         
         //Setup the platform
-        this.ground = this.add.tileSprite(0,window.innerHeight - 100,window.innerWidth,100,"ground").setOrigin(0).setScrollFactor(0);
+        this.ground = this.add.tileSprite(0,window.innerHeight - 100,window.innerWidth,100,"ground").setOrigin(0).setScrollFactor(1);
         this.physics.add.existing(this.ground,true);
         
         //Setup the Player
@@ -113,9 +113,9 @@ class GameScene extends Phaser.Scene{
     }
     
     update(){
-        var groundSpeed = 6;
+        var groundSpeed = 8;
         var bgSpeed = 2;
-        var playerSpeed = 6;
+        var playerSpeed = 180;
         var enemySpeed = -180;
         var no_of_enemies = 0;
 
@@ -183,7 +183,8 @@ class GameScene extends Phaser.Scene{
             this.player.anims.play("run",true);
             this.scene.tilePositionX += bgSpeed;
             this.ground.tilePositionX += groundSpeed;
-            
+            this.cameras.main.scrollX += groundSpeed;
+
             this.coins.children.iterate(function(child){
                 child.body.position.x -= bgSpeed;
             },this);
