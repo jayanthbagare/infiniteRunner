@@ -24,7 +24,8 @@ class TitleScene extends Phaser.Scene{
 		let startButton = this.add.image(this.width/2,this.height/2 + 100,'startButton').setInteractive();
 		startButton.setScale(0.2);
 		startButton.on("pointerdown",function(event){
-			this.scene.start('GameScene');
+			//this.scene.start('GameScene');
+			this.scene.start('ForestLevel');
 		},this);
 
 		this.character = this.add.sprite(this.width/2,this.height/2 - 100,'runner');
