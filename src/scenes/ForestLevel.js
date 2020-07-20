@@ -14,7 +14,6 @@ class ForestLevel extends Phaser.Scene{
         var enemyExit;
         var distanceTravelled;
         var txtDistanceTravelled;
-        var txtDistanceTravelled;
         var scoreCoinsCollected;
         var gravity;
 
@@ -127,6 +126,7 @@ class ForestLevel extends Phaser.Scene{
         var groundSpeed = 7.5;
         var enemySpeed = 200;
         var jumpHeight = 250;
+        var uom;
         
 
         if(this.playerDied){
@@ -157,8 +157,12 @@ class ForestLevel extends Phaser.Scene{
             this.player.anims.play("run",true);
 
             this.distanceTravelled += groundSpeed/1000
-
-            this.txtDistanceTravelled.setText("Distance Travelled : " + Math.ceil(this.distanceTravelled));
+            if(this.distanceTravelled > 8000){
+                uom = " Yojanas";
+            }else{
+                uom = " Dandas"
+            }
+            this.txtDistanceTravelled.setText("Distance Travelled : " + Math.ceil(this.distanceTravelled) + uom);
          }
         else{
             this.player.anims.stop();
@@ -199,6 +203,8 @@ class ForestLevel extends Phaser.Scene{
     endGame(){
         this.player.anims.stop();
         this.player.anims.play("playerDies");
+        this.enemy.anims.stop();
+        this.enemy.active = false;
         this.player.active = false;
         this.enemyCollider.active = false;
     }
