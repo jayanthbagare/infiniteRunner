@@ -14,8 +14,9 @@ class ForestLevel extends Phaser.Scene{
         var enemyExit;
         var distanceTravelled;
         var txtDistanceTravelled;
-        var txtCoinsCollected;
+        var txtDistanceTravelled;
         var scoreCoinsCollected;
+        var gravity;
 
         super({
             key:'ForestLevel'
@@ -28,6 +29,9 @@ class ForestLevel extends Phaser.Scene{
         this.cursors = this.input.keyboard.createCursorKeys();
         this.enemyExit = false;
         this.playerDied = false;
+        this.distanceTravelled = 0;
+        this.scoreCoinsCollected = 0;
+        this.gravity = this.physics.world.gravity.y;
     }
 
     preload(){
@@ -118,6 +122,13 @@ class ForestLevel extends Phaser.Scene{
 
     update(){
 
+        var mountainSpeed = 2.5;
+        var forestSpeed = 5;
+        var groundSpeed = 7.5;
+        var enemySpeed = 200;
+        var jumpHeight = 250;
+        
+
         if(this.playerDied){
             this.input.keyboard.resetKeys();
             this.endGame();
@@ -127,12 +138,9 @@ class ForestLevel extends Phaser.Scene{
             if(this.enemy.body.position.x <= 10 && this.playerDied != true){
                 this.enemy.disableBody(true,true);
                 this.enemy.destroy();
-                this.enemyExit = true;
-                this.distanceTravelled += 10;
-                this.txtDistanceTravelled.setText("Distance Travelled : " + this.distanceTravelled);
+                this.enemyExit = true;          
             }else if(this.playerDied != true){
-                
-                this.enemy.setVelocityX(-200);
+                this.enemy.setVelocityX(-enemySpeed);
                 this.enemy.anims.play("enemyRun",true);
                 this.enemyExit = false;
             }
@@ -141,29 +149,33 @@ class ForestLevel extends Phaser.Scene{
         }
 
         if(this.cursors.right.isDown){
-            this.mountains.tilePositionX += 2.5
-            this.forest.tilePositionX += 5
-            this.ground.tilePositionX += 7.5
-
+            this.mountains.tilePositionX += mountainSpeed;
+            this.forest.tilePositionX += forestSpeed;
+            this.ground.tilePositionX += groundSpeed;
+            
             this.player.flipX = false;
             this.player.anims.play("run",true);
+
+            this.distanceTravelled += groundSpeed/1000
+
+            this.txtDistanceTravelled.setText("Distance Travelled : " + Math.ceil(this.distanceTravelled));
          }
         else{
             this.player.anims.stop();
             //this.player.anims.setCurrentFrame(this.player.anims.currentAnim.frames[0]);
         }
         
-
+        
         if(this.cursors.up.isDown && this.player.body.touching.down){
             this.jumpTimer = 1;
-            this.player.setVelocityY(-250);
+            this.player.setVelocityY(-jumpHeight);
         }else if(this.cursors.up.isDown && (this.jumpTimer != 0)){
             if(this.jumpTimer > 50){
-                this.player.setGravityY(500);
+                this.player.setGravityY(this.gravity + 100);
                 this.jumpTimer = 0;
             }else{
                 this.jumpTimer++;
-                this.player.setVelocityY(-250);
+                this.player.setVelocityY(-jumpHeight);
             }
         } else if(this.jumpTimer != 0){
             this.jumpTimer = 0;
