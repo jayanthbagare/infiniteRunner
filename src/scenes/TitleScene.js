@@ -7,6 +7,7 @@ class TitleScene extends Phaser.Scene{
 		var width;
 		var height;
 		var animation;
+		var spacebarButton;
 	}
 
 	preload(){
@@ -15,6 +16,7 @@ class TitleScene extends Phaser.Scene{
 
 		this.load.spritesheet('runner','assets/player/player.png',{ frameWidth: 96, frameHeight: 90 });
 		this.load.image('startButton','assets/startButton.png');
+		this.spacebarButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 	}
 
 	create(){
@@ -23,7 +25,7 @@ class TitleScene extends Phaser.Scene{
 
 		let startButton = this.add.image(this.width/2,this.height/2 + 100,'startButton').setInteractive();
 		startButton.setScale(0.2);
-		startButton.on("pointerdown",function(event){
+		startButton.on('pointerdown',function(event){
 			//this.scene.start('GameScene');
 			this.scene.start('ForestLevel');
 		},this);
@@ -38,12 +40,16 @@ class TitleScene extends Phaser.Scene{
             repeat: -1
 		});
 		
-		this.cursors = this.input.keyboard.createCursorKeys();
+		//this.cursors = this.input.keyboard.createCursorKeys();
+		//this.jumpButton = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP);
 
 	}
 
 	update(){
 		this.character.anims.play("run",true,2);
+		if(this.spacebarButton.isDown){
+			this.scene.start('ForestLevel');
+		}
 	}
 }
 
